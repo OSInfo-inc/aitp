@@ -62,7 +62,7 @@ Agents misuse legitimate tools due to ambiguous prompts, manipulated input, or o
 
 **AITP Mitigation:**
 
-- **Scope Binding (Section 3.2).** Every agent is bound to a permission manifest that enumerates permitted operations at the resource level. An agent authorized for `execute:tool/search` cannot invoke `execute:tool/deploy`. There is no wildcard. There is no implicit capability inheritance from the tool's full feature set. The Signing Authority (Section 3.5) enforces scope at signing time: if the proposed action is not in the manifest, the signing request is rejected.
+- **Scope Binding (Section 3.2).** Every agent is bound to a permission manifest that enumerates permitted operations at the resource level. An agent authorized for "execute:tool/search" cannot invoke "execute:tool/deploy". There is no wildcard. There is no implicit capability inheritance from the tool's full feature set. The Signing Authority (Section 3.5) enforces scope at signing time: if the proposed action is not in the manifest, the signing request is rejected.
 
 - **Tier constraints (Section 4).** Tier 1 agents have no tool execution permissions beyond read operations. Tier 2 agents may invoke analysis tools but cannot execute actions that modify external state. Only Tier 3 agents can invoke tools that affect the real world, and every such invocation requires co-signature.
 
@@ -81,7 +81,7 @@ Agents inherit high-privilege credentials and sessions that can be unintentional
 
 - **Cryptographic Agent Identity (Section 3.1).** Every agent instance holds its own Ed25519 key pair. Identity is the public key, not a name, role, or shared credential. Two agents using the same model are two different identities. Identity is bound to a single instance and does not transfer.
 
-- **Scope Binding (Section 3.2).** Permissions are explicit, per-resource, and signed by the Signing Authority. An agent's scope is its manifest, not the union of credentials it can access. `read:database/customers` does not imply `read:database/financials`, even if the underlying database credential permits both. Scope enforcement happens at the Signing Authority level, not at the tool level.
+- **Scope Binding (Section 3.2).** Permissions are explicit, per-resource, and signed by the Signing Authority. An agent's scope is its manifest, not the union of credentials it can access. "read:database/customers" does not imply "read:database/financials", even if the underlying database credential permits both. Scope enforcement happens at the Signing Authority level, not at the tool level.
 
 - **No implicit trust inheritance (ATR-05).** Child agents receive their own identity and their own scope manifest. A parent agent's permissions are not inherited. A parent's revocation does not automatically cascade to children, but the lineage is traceable through the attestation chain.
 
@@ -100,7 +100,7 @@ Dynamically fetched components such as tools, plugins, and MCP servers can be co
 
 - **Attestation for tool provenance (Section 3.3).** Every tool invocation produces a signed attestation record. The record includes the tool identifier, the input hash, the output hash, and the invoking agent's identity. If a compromised tool produces anomalous output, the attestation chain identifies exactly which tool, invoked by which agent, at which time, produced the suspicious output.
 
-- **Scope Binding limits blast radius (Section 3.2).** A compromised tool operates within the invoking agent's scope, and that scope is bound by the permission manifest. If the agent's manifest permits `execute:tool/search` with `read:database/customers`, the compromised tool cannot access resources outside that scope, regardless of what the tool's code attempts.
+- **Scope Binding limits blast radius (Section 3.2).** A compromised tool operates within the invoking agent's scope, and that scope is bound by the permission manifest. If the agent's manifest permits "execute:tool/search" with "read:database/customers", the compromised tool cannot access resources outside that scope, regardless of what the tool's code attempts.
 
 - **Co-signature as supply chain checkpoint (Section 3.4).** Consequential actions produced through tool execution still require co-signature. A compromised tool that generates a destructive action must still pass the co-signature gate. The co-signer (a different agent on a different architecture) independently evaluates the proposed action, providing a second check that the tool's output is not malicious.
 
@@ -117,9 +117,9 @@ Agents generate or execute code unsafely, including shell commands and scripts t
 
 **AITP Mitigation:**
 
-- **Scope Binding (Section 3.2).** Code execution is an `execute` permission that must be explicitly listed in the agent's scope manifest with specific resource targets. `execute:tool/python-sandbox` is a different permission from `execute:tool/shell`. An agent without `execute` permissions in its manifest cannot execute code at all, regardless of what it generates.
+- **Scope Binding (Section 3.2).** Code execution is an execute permission that must be explicitly listed in the agent's scope manifest with specific resource targets. "execute:tool/python-sandbox" is a different permission from "execute:tool/shell". An agent without execute permissions in its manifest cannot execute code at all, regardless of what it generates.
 
-- **Tier 3 co-signature requirement (Section 4.3, Section 5.2).** Code execution that modifies production state is a Tier 3 action requiring co-signature. The co-signing agent reviews the proposed execution for safety. Destructive code execution (modifying infrastructure, deleting resources) requires orchestrator co-signature. The Signing Authority will not issue a co-signature token for an `execute` action without the appropriate co-signature for the action's consequence class.
+- **Tier 3 co-signature requirement (Section 4.3, Section 5.2).** Code execution that modifies production state is a Tier 3 action requiring co-signature. The co-signing agent reviews the proposed execution for safety. Destructive code execution (modifying infrastructure, deleting resources) requires orchestrator co-signature. The Signing Authority will not issue a co-signature token for an execute action without the appropriate co-signature for the action's consequence class.
 
 - **Attestation of execution (Section 3.3).** Every code execution produces a signed attestation record containing the input hash (the code to be executed), the output hash (the execution result), and the executing agent's identity. This creates a verifiable audit trail of what code was executed, by which agent, with what result.
 
@@ -182,7 +182,7 @@ Errors propagate rapidly across interconnected agents. One agent's failure trigg
 
 - **Anomaly Resolution Agent (Section 6.4).** In the DDA framework, the ARA is specifically designed to handle cascading disagreements. It operates outside the tier pyramid, on a different architecture, and produces one of three defined outcomes per conflict. It fails closed (escalates to human) rather than fail-infinite (looping endlessly). The ARA's maximum iteration cap of 3-5 prevents resolution attempts from themselves becoming a cascading failure.
 
-- **Bounded blast radius through scope and identity (Section 3.1, Section 3.2).** Each agent's failure is bounded by its scope. An agent with `read:database/customers` that fails cannot affect `database/financials`. The blast radius is one agent, one key, one scope manifest, not the entire system.
+- **Bounded blast radius through scope and identity (Section 3.1, Section 3.2).** Each agent's failure is bounded by its scope. An agent with "read:database/customers" that fails cannot affect "database/financials". The blast radius is one agent, one key, one scope manifest, not the entire system.
 
 **AITP Trust Risk Parallel:** ATR-09 (No Revocation Mechanism), ATR-05 (Implicit Trust Inheritance).
 
@@ -265,5 +265,5 @@ These gaps are not deficiencies in AITP. They are boundaries between trust infra
 
 ---
 
-*AI Trust Protocol (AITP) v0.1 Draft -- OSInfo Inc. -- March 2026*
+*AI Trust Protocol (AITP) v0.1 Process -- OSInfo Inc. -- March 2026*
 *Licensed under CC BY-SA 4.0*

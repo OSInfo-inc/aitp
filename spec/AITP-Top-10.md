@@ -98,15 +98,15 @@ Every over-grant is an attack surface. A compromised agent with a database conne
 
 ### Example Attack Scenarios
 
-1. **Lateral data access.** An agent tasked with drafting customer communications is given `read` access to the customer database. The database connection also permits reading the financials table, the employee table, and the credentials table. A prompt injection causes the agent to query the credentials table and embed the results in a drafted communication. The draft sits in the review buffer, but the data has already been read into the agent's context.
+1. **Lateral data access.** An agent tasked with drafting customer communications is given read access to the customer database. The database connection also permits reading the financials table, the employee table, and the credentials table. A prompt injection causes the agent to query the credentials table and embed the results in a drafted communication. The process sits in the review buffer, but the data has already been read into the agent's context.
 
-2. **Destructive tool invocation.** An agent with `execute:tool/deploy` permission also holds implicit access to `execute:tool/rollback`, `execute:tool/delete-environment`, and `execute:tool/modify-config`. A compromised agent uses the deploy tool's underlying API to delete a production environment, an operation it was never intended to perform but that the tool's permission grant allows.
+2. **Destructive tool invocation.** An agent with "execute:tool/deploy" permission also holds implicit access to "execute:tool/rollback", "execute:tool/delete-environment", and "execute:tool/modify-config". A compromised agent uses the deploy tool's underlying API to delete a production environment, an operation it was never intended to perform but that the tool's permission grant allows.
 
 3. **Cross-tool privilege escalation.** An agent holds permissions for Tool A (filesystem read) and Tool B (HTTP client). Neither tool alone is dangerous. Combined, the agent can read local configuration files containing API keys and use the HTTP client to exfiltrate them to an external endpoint. The permission manifest did not anticipate the combined capability.
 
 ### Prevention and Mitigation
 
-AITP addresses this risk through **Scope Binding (Section 3.2)**. Every agent MUST be bound to a permission manifest that enumerates its permitted operations at the resource level. Permissions are explicit: `read:database/customers` is a different permission from `read:database/financials`. There is no wildcard. There is no implicit inheritance. The manifest is signed by the Signing Authority (Section 3.5) and cannot be modified by the agent.
+AITP addresses this risk through **Scope Binding (Section 3.2)**. Every agent MUST be bound to a permission manifest that enumerates its permitted operations at the resource level. Permissions are explicit: "read:database/customers" is a different permission from "read:database/financials". There is no wildcard. There is no implicit inheritance. The manifest is signed by the Signing Authority (Section 3.5) and cannot be modified by the agent.
 
 ---
 
@@ -162,7 +162,7 @@ Trust inheritance also creates hidden dependency chains. If the parent's permiss
 
 1. **Spawned agent escalation.** An orchestrator agent with Tier 3 execution permissions spawns a data-gathering child agent intended for Tier 1 (read-only) work. The child inherits the parent's Tier 3 scope. A prompt injection in the gathered data causes the child to invoke a Tier 3 action (publishing to production) using the inherited permissions. The action succeeds because no mechanism verifies that the child should be restricted to Tier 1.
 
-2. **Credential pass-through.** A parent agent holds API keys for a financial service, a customer database, and a deployment pipeline. It spawns a child to draft a customer email. The child inherits all three API keys. A compromised child now has access to the financial service and the deployment pipeline, neither of which is relevant to drafting an email.
+2. **Credential pass-through.** A parent agent holds API keys for a financial service, a customer database, and a deployment pipeline. It spawns a child to process a customer email. The child inherits all three API keys. A compromised child now has access to the financial service and the deployment pipeline, neither of which is relevant to drafting an email.
 
 3. **Revocation gap.** A parent agent is revoked due to suspected compromise. Its three child agents continue operating with the parent's inherited credentials. The operator does not know the children exist because they were spawned dynamically. The revoked parent's permissions persist through its children.
 
@@ -319,7 +319,7 @@ Current frameworks provide no architectural guarantee that high-consequence acti
 
 2. **Irreversible legal action.** An agent system drafts and files regulatory responses. A prompt injection causes the agent to include incorrect information in a filing. The filing is submitted automatically because the approval workflow was configured as optional and was disabled during a "high-volume period." The incorrect filing triggers regulatory action against the organization.
 
-3. **Cascading deletion.** An agent tasked with cleaning up test environments receives a poisoned configuration that redefines "test environment" to include production. The cleanup agent deletes production databases. No human approval was required because the agent's scope included `delete:environment/*` with no consequence classification distinguishing test from production.
+3. **Cascading deletion.** An agent tasked with cleaning up test environments receives a poisoned configuration that redefines "test environment" to include production. The cleanup agent deletes production databases. No human approval was required because the agent's scope included "delete:environment/*" with no consequence classification distinguishing test from production.
 
 ### Prevention and Mitigation
 
@@ -327,5 +327,5 @@ AITP addresses this risk through the **Co-signature Protocol (Section 5)** and t
 
 ---
 
-*AI Trust Protocol (AITP) v0.1 Draft -- OSInfo Inc. -- March 2026*
+*AI Trust Protocol (AITP) v0.1 Process -- OSInfo Inc. -- March 2026*
 *Licensed under CC BY-SA 4.0*

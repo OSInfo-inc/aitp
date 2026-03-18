@@ -17,8 +17,8 @@ AI agent systems operate without cryptographic identity, audit trails, or scoped
 AITP is a specification for process integrity and nonrepudiation in AI systems. It defines:
 
 - **Six Trust Primitives**: Agent Identity, Scope Binding, Attestation, Co-signature Protocol, Signing Authority, Revocation
-- **Three Operational Tiers**: Crawl (read-only), Analysis (draft), Action (publish, requires co-signature)
-- **DDA (Distributed Deterministic Attestation)**: A scalable verification architecture for validating AI output across millions of artifacts using sharded agents, boundary overlap, and cross-architecture validation
+- **Three Operational Tiers**: Observe (read-only), Analysis (draft), Action (publish, requires co-signature)
+- **DDA (Distributed Deterministic Attestation)**: A scalable verification architecture for validating AI output across millions of artifacts using sliced agents, boundary overlap, and cross-architecture validation
 - **Resilience Requirements**: Hybrid cloud/local/offline architecture with mandatory air-gapped validation nodes
 - **AITP Top 10**: The ten most critical trust risks in agent systems, modeled after the OWASP Top 10
 
@@ -40,7 +40,7 @@ AITP does not guarantee output correctness. It guarantees that every action is a
 Every agent holds an Ed25519 key pair. Every action produces a signed attestation. Consequential actions require co-signature from an architecturally independent entity. Compromised agents are revoked immediately with bounded blast radius.
 
 ### DDA: Distributed Deterministic Attestation
-Humans cannot validate a million AI decisions. But a human can validate the system that validates those decisions. DDA shards validation across agent tiers, with each tier operating on different data types using different model architectures. Volume cascades from millions of artifacts down to single-digit human decision points.
+Humans cannot validate a million AI decisions. But a human can validate the system that validates those decisions. DDA slices validation across agent tiers, with each tier operating on different data types using different model architectures. Volume cascades from millions of artifacts down to single-digit human decision points.
 
 ### Resilience
 Any trust standard that depends on a single provider is not a trust standard. AITP requires hybrid architecture: cloud for speed, local for continuity, offline for trust-critical validation.

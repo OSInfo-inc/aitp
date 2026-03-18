@@ -105,23 +105,23 @@ Identity is bound to a specific agent instance. Two instances of the same model 
 
 ### 3.2 Scope Binding
 
-Each cryptographic identity is bound to a permission manifest that defines the complete set of authorized actions: read, draft, publish, execute, delete, and any domain-specific operations. Permissions are explicit and enumerated. No ambient authority exists. An agent without a manifest entry for an action is prohibited from performing that action. The binding between identity and scope is itself signed and immutable.
+Each cryptographic identity is bound to a permission manifest that defines the complete set of authorized actions: read, process, publish, execute, delete, and any domain-specific operations. Permissions are explicit and enumerated. No ambient authority exists. An agent without a manifest entry for an action is prohibited from performing that action. The binding between identity and scope is itself signed and immutable.
 
 **Permission Types:**
 
 | Permission | Description |
 |---|---|
-| `read` | Retrieve data from a specified resource |
-| `draft` | Produce output that requires approval before taking effect |
-| `publish` | Produce output that takes effect immediately |
-| `execute` | Invoke a tool or subprocess |
-| `delete` | Remove or destroy a resource |
+| read | Retrieve data from a specified resource |
+| process | Produce output that requires approval before taking effect |
+| write | Produce output that takes effect immediately |
+| execute | Invoke a tool or subprocess |
+| delete | Remove or destroy a resource |
 
-Permissions are scoped to specific resources. `read:database/customers` is a different permission from `read:database/financials`. `execute:tool/search` is a different permission from `execute:tool/deploy`. There is no wildcard. There is no implicit inheritance.
+Permissions are scoped to specific resources. "read:database/customers" is a different permission from "read:database/financials". "execute:tool/search" is a different permission from "execute:tool/deploy". There is no wildcard. There is no implicit inheritance.
 
 The manifest is signed by the Signing Authority at registration time. The agent cannot modify its own manifest. Manifest changes require a new registration with the Signing Authority, producing a new signed manifest and a manifest-change record in the attestation log.
 
-No ambient authority. An agent has exactly the permissions its manifest specifies. If the manifest says `read:database/customers` and `draft:document/report`, the agent can read the customers table and draft reports. It cannot read the financials table, publish reports, execute tools, or delete anything. Least privilege is enforced at the key level, not the application level.
+No ambient authority. An agent has exactly the permissions its manifest specifies. If the manifest says "read:database/customers" and "draft:document/report", the agent can read the customers table and process reports. It cannot read the financials table, publish reports, execute tools, or delete anything. Least privilege is enforced at the key level, not the application level.
 
 ### 3.3 Attestation
 
@@ -131,14 +131,14 @@ Every agent action produces a signed attestation record. The record is the atomi
 
 | Field | Description |
 |---|---|
-| `agent_id` | Public key of the acting agent |
-| `action` | Action type and target resource |
-| `input_hash` | SHA-512 hash of the action's input |
-| `output_hash` | SHA-512 hash of the action's output |
-| `timestamp` | RFC 3339 timestamp, sourced from a trusted time authority |
-| `scope_ref` | Reference to the agent's scope manifest |
-| `prev_hash` | SHA-256 hash of the previous attestation record (chain linkage) |
-| `signature` | Ed25519 signature over all preceding fields |
+| "agent_id" | Public key of the acting agent |
+| "action" | Action type and target resource |
+| "input_hash" | SHA-512 hash of the action's input |
+| "output_hash" | SHA-512 hash of the action's output |
+| "timestamp" | RFC 3339 timestamp, sourced from a trusted time authority |
+| "scope_ref" | Reference to the agent's scope manifest |
+| "prev_hash" | SHA-256 hash of the previous attestation record (chain linkage) |
+| "signature" | Ed25519 signature over all preceding fields |
 
 Attestation records are append-only. No record may be modified or deleted. Records are hash-chained: each record includes the hash of the previous record, forming a tamper-evident sequence. Any modification to a historical record breaks the chain from that point forward.
 
@@ -156,7 +156,7 @@ This is two-person integrity applied to autonomous systems. The model is dual au
 
 1. **Peer Agent.** A different agent instance, running a different model or a different architecture, with its own independent identity and scope. The peer agent reviews the proposed action and either co-signs or rejects. The peer must not share an operational dependency with the requesting agent: they must not share a context window, a tool set, or an upstream data source.
 
-2. **Orchestrator.** A system-level coordinator (e.g., a Siv-class orchestrator) that is not an actor in the operational pipeline but a validator. The orchestrator verifies that the proposed action falls within the agent's scope, that the attestation chain is intact, and that no anomaly flags have been raised. The orchestrator does not evaluate whether the action is correct. It evaluates whether the action is authorized and procedurally sound.
+2. **Orchestrator.** A system-level coordinator (e.g., a policy orchestrator) that is not an actor in the operational pipeline but a validator. The orchestrator verifies that the proposed action falls within the agent's scope, that the attestation chain is intact, and that no anomaly flags have been raised. The orchestrator does not evaluate whether the action is correct. It evaluates whether the action is authorized and procedurally sound.
 
 3. **Human Operator.** A human who confirms the action via an out-of-band channel. Out-of-band means a communication channel that is not accessible to the agent requesting confirmation. Examples: a Signal message containing a one-time nonce, a hardware token confirmation, a phone call. The human signs by returning the nonce through the out-of-band channel.
 
@@ -226,7 +226,7 @@ Without revocation, a compromised agent is a permanent liability with unbounded 
 
 AITP defines three operational tiers that enforce graduated trust through architectural separation, not advisory policy. Each tier constrains agent capabilities at the infrastructure level. An agent operating within a given tier cannot exceed that tier's permissions regardless of its instructions, training, or intent. Tier enforcement is structural: it is implemented in the execution environment, not in the agent's prompt or configuration. Tiers enforce architectural separation: agents at different tiers run in different execution contexts, consume different inputs, and produce outputs into different buffers. Tier boundaries are not advisory. They are enforced by the Signing Authority through scope manifests.
 
-### 4.1 Tier 1: Crawl (Low Trust)
+### 4.1 Tier 1: Observe (Low Trust)
 
 Tier 1 agents operate in read-only mode. They ingest data from external sources, process it, and write output exclusively to a quarantine buffer. A Tier 1 agent MUST NOT post content, send messages, write files to production storage, modify databases, or execute any operation that alters state beyond its quarantine scope. The quarantine buffer is append-only from the agent's perspective and read-only to all other system components until promoted by a Tier 2 review.
 
@@ -239,11 +239,11 @@ Tier 1 agents operate in read-only mode. They ingest data from external sources,
 
 **Blast radius if compromised:** Corrupted data in the quarantine buffer that no downstream system has acted on. No real-world effect is possible from Tier 1 alone. The quarantine buffer is designed to be inspected before anything in it is consumed. A compromised Tier 1 agent is a data integrity problem, not an operational security problem.
 
-### 4.2 Tier 2: Analysis (Medium Trust)
+### 4.2 Tier 2: Process (Medium Trust)
 
 Tier 2 agents read from the quarantine buffer populated by Tier 1. Tier 2 agents MUST be instantiated on different models, different architectures, and different execution contexts than the Tier 1 agents whose output they review. This cross-architecture requirement prevents a single vulnerability from compromising both the producer and the reviewer.
 
-Tier 2 agents MAY draft posts, compose messages, generate code changes, and prepare any output intended for external effect. However, a Tier 2 agent MUST NOT publish, send, commit, or execute any action that modifies state outside the review buffer. All Tier 2 output sits in a review buffer pending Tier 3 authorization.
+Tier 2 agents MAY process posts, compose messages, generate code changes, and prepare any output intended for external effect. However, a Tier 2 agent MUST NOT publish, send, commit, or execute any action that modifies state outside the review buffer. All Tier 2 output sits in a review buffer pending Tier 3 authorization.
 
 **Constraints:**
 
@@ -254,21 +254,21 @@ Tier 2 agents MAY draft posts, compose messages, generate code changes, and prep
 
 **Blast radius if compromised:** Malicious content in the review buffer. The content has not been published, sent, or committed. It must pass co-signature validation (Section 5) before any Tier 3 agent acts on it.
 
-### 4.3 Tier 3: Action (High Trust)
+### 4.3 Tier 3: Act (High Trust)
 
-Tier 3 is the boundary where agent output touches the real world. Posts go live. Code is committed. Messages are sent. Files are written to production. Every Tier 3 action requires co-signature as defined in Section 5.
+Tier 3 is the boundary where agent output touches the real world. Data is written to external systems. Actions take effect in the real world. Files are written to production. Every Tier 3 action requires co-signature as defined in Section 5.
 
 **Constraints:**
 
 - All Tier 3 operations require co-signature. No single agent can execute a Tier 3 action unilaterally.
-- Input comes from the review buffer only. Tier 3 agents do not draft, compose, or generate. They execute pre-approved actions.
+- Input comes from the review buffer only. Tier 3 agents do not process, compose, or generate. They execute pre-approved actions.
 - Every Tier 3 action produces an attestation record that includes both the acting agent's signature and the co-signer's signature.
 
 **Co-signature Requirements for Tier 3 Actions:**
 
 | Action Type | Required Co-signature |
 |---|---|
-| Standard publish/send/commit (social media posts, routine communications, non-destructive file writes) | Two Tier 2 agents agreeing, OR one Tier 2 agent plus orchestrator |
+| Standard external actions (write to external systems, transmit data, modify shared resources) (social media posts, routine communications, non-destructive file writes) | Two Tier 2 agents agreeing, OR one Tier 2 agent plus orchestrator |
 | Destructive operations (database modifications, infrastructure changes, financial transactions) | Orchestrator co-signature required |
 | Highest-consequence operations (irreversible actions, safety-critical systems) | Human co-signature via out-of-band channel |
 
@@ -292,7 +292,7 @@ AITP defines three classes of valid co-signers, each with distinct trust propert
 
 **1. Peer Agent (different model/architecture).** A co-signing agent that operates on a different model or architecture than the requesting agent. A peer agent provides adversarial cross-verification: it is unlikely to share the same failure modes, biases, or vulnerabilities as the agent whose output it reviews. Must not share an execution context, upstream data source, or tool set with the requesting agent. The peer agent operates from its own independent identity and scope manifest. Compromise of the requesting agent does not imply compromise of the peer.
 
-**2. Orchestrator (Siv-class or equivalent).** A supervisory agent that is not a participant in the operational pipeline that produced the output. The orchestrator holds elevated signing authority and is required for destructive operations. An orchestrator MUST NOT be the same agent instance, model, or architecture as any agent in the operational chain it supervises. The orchestrator does not generate content, draft messages, or produce analysis. It validates that proposed actions are authorized and procedurally sound. It is a policy enforcer, not a decision maker.
+**2. Orchestrator (policy orchestrator or equivalent).** A supervisory agent that is not a participant in the operational pipeline that produced the output. The orchestrator holds elevated signing authority and is required for destructive operations. An orchestrator MUST NOT be the same agent instance, model, or architecture as any agent in the operational chain it supervises. The orchestrator does not generate content, process messages, or produce analysis. It validates that proposed actions are authorized and procedurally sound. It is a policy enforcer, not a decision maker.
 
 **3. Human Operator (out-of-band confirmation).** A human who confirms authorization via out-of-band communication channel using a one-time cryptographic nonce. The out-of-band requirement prevents a compromised agent from simulating human approval within the system's primary communication channel. Examples: a Signal message containing a one-time nonce, a hardware token confirmation, a phone call. The human signs by returning the nonce through the out-of-band channel. The nonce is single-use, time-bounded, and tied to the specific action being authorized.
 
@@ -333,26 +333,26 @@ Distributed Deterministic Attestation is a novel verification architecture desig
 
 DDA is built on three design principles:
 
-- **Distributed.** The verification workload is sharded across many agents. No single agent sees the entire corpus. Each agent signs its assigned slice.
+- **Distributed.** The verification workload is sliced across many agents. No single agent sees the entire corpus. Each agent signs its assigned slice.
 - **Deterministic.** Verification at each tier is mechanically reproducible. No language model participates in the validation loop. Attestation validity is provable by re-execution.
 - **Attestation.** Every agent signs a cryptographic attestation for its slice. The attestation chain is the proof artifact. It can be independently verified without re-running the analysis.
 
-### 6.1 Shard Mathematics
+### 6.1 Slice Mathematics
 
-Given a corpus of *S* items distributed across *n* agents, each agent receives *S/n* items with boundary overlap. *S* mod *n* MUST equal 0 (the corpus is padded if necessary). Boundary overlap means adjacent shards share items at their edges, creating independent cross-checks without requiring a separate validation pass. Disagreements at shard boundaries are the first signal of anomaly.
+Given a corpus of *S* items distributed across *n* agents, each agent receives *S/n* items with boundary overlap. *S* mod *n* MUST equal 0 (the corpus is padded if necessary). Boundary overlap means adjacent slices share items at their edges, creating independent cross-checks without requiring a separate validation pass. Disagreements at shard boundaries are the first signal of anomaly.
 
 ### 6.2 Hierarchical Verification Pyramid
 
 DDA defines a five-tier verification pyramid:
 
 **Tier 0: Raw Validation.**
-Approximately 1,000 agents, each processing approximately 6,000 files. Agents perform structural validation, hash verification, format compliance, and content classification. Each agent produces a signed attestation for its shard. Boundary overlap between adjacent shards provides built-in cross-verification.
+Approximately 1,000 agents, each processing approximately 6,000 files. Agents perform structural validation, hash verification, format compliance, and content classification. Each agent produces a signed attestation for its shard. Boundary overlap between adjacent slices provides built-in cross-verification.
 
 **Tier 1: Cross-Validation.**
 Approximately 50 agents operating on a different model architecture than Tier 0. These agents receive only anomalies and boundary disagreements from Tier 0, not the full corpus. They produce meta-attestations that either confirm or challenge Tier 0 findings.
 
 **Tier 2: Aggregation.**
-Approximately 10 agents operating on an offline, air-gapped model. These agents receive pattern clusters and anomaly summaries from Tier 1. They produce confidence scores and identify systemic patterns that span multiple shards.
+Approximately 10 agents operating on an offline, air-gapped model. These agents receive pattern clusters and anomaly summaries from Tier 1. They produce confidence scores and identify systemic patterns that span multiple slices.
 
 **Tier 3: Summary.**
 Two agents of different architectures independently review the Tier 2 output. Agreement between both agents confirms the finding. Disagreement triggers escalation to Tier 4.
@@ -464,5 +464,5 @@ This specification avoids tying its requirements to the current transformer arch
 
 ---
 
-*AI Trust Protocol (AITP) v0.1 Draft -- OSInfo Inc. -- March 2026*
+*AI Trust Protocol (AITP) v0.1 Process -- OSInfo Inc. -- March 2026*
 *Licensed under CC BY-SA 4.0*
