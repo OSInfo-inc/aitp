@@ -2,7 +2,7 @@
 
 **Version:** 1.1
 **Date:** March 2026
-**Authors:** Michael Harrison, Ard Haskell -- OSInfo Inc.
+**Authors:** Michael Harrison, Ard Haskell, OSInfo Inc.
 **License:** CC BY-SA 4.0
 
 ---
@@ -40,7 +40,7 @@ AITP differs from all existing approaches in two fundamental ways. First, AITP i
 
 AITP is designed to complement, not replace, existing protocols. An organization may use A2A for agent discovery, MCP for tool integration, and AITP for trust enforcement across the resulting agent ecosystem.
 
-As AI-generated content enters every consequential domain -- legal filings, medical records, financial analysis, military intelligence, academic research -- the foundational question shifts from "is this iteration of AI good enough" to "how do we know what's true?" There is no single source of truth. There never was. We just hadn't built systems fast enough to expose that. Now we have, so what do we do about it?
+As AI-generated content enters every consequential domain, legal filings, medical records, financial analysis, military intelligence, academic research, the foundational question shifts from "is this iteration of AI good enough" to "how do we know what's true?" There is no single source of truth. There never was. We just hadn't built systems fast enough to expose that. Now we have, so what do we do about it?
 
 The industry frames the question as binary: trust AI or do not trust AI. AITP rejects both positions. The question is not whether to trust but instead: what is the architecture for verifying AI behavior at scale, given that humans cannot check everything? AITP provides that architecture.
 
@@ -435,7 +435,7 @@ The distribution of workload across cloud, local, and offline tiers is deploymen
 
 When the cloud layer is unavailable, the local and offline layers absorb the workload. Operations are slower. Capability is reduced. But the system remains operational. The mission does not stop. The trust chain does not break.
 
-The air-gapped validator is elevated from an optional deployment to a REQUIREMENT. Any trust standard that depends on a single external provider for its verification infrastructure is not a trust standard. It is an availability bet.
+The air-gapped validator is elevated from an optional deployment to a requirement. Any trust standard that depends on a single external provider for its verification infrastructure is not a trust standard. It is an availability bet.
 
 ---
 
@@ -487,5 +487,5 @@ This specification avoids tying its requirements to the current transformer arch
 
 ---
 
-*AI Trust Protocol (AITP) v1.1 -- OSInfo Inc. -- March 2026*
+*AI Trust Protocol (AITP) v0.3, OSInfo Inc., March 2026*
 *Licensed under CC BY-SA 4.0*

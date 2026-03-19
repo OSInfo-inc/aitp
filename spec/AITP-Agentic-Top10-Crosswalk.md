@@ -2,7 +2,7 @@
 
 **Version:** 1.1
 **Date:** March 2026
-**Authors:** Michael Harrison, Ard Haskell -- OSInfo Inc.
+**Authors:** Michael Harrison, Ard Haskell, OSInfo Inc.
 **License:** CC BY-SA 4.0
 
 ---
@@ -268,5 +268,5 @@ These gaps are not deficiencies in AITP. They are boundaries between trust infra
 
 ---
 
-*AI Trust Protocol (AITP) v1.1 -- OSInfo Inc. -- March 2026*
+*AI Trust Protocol (AITP) v0.3, OSInfo Inc., March 2026*
 *Licensed under CC BY-SA 4.0*

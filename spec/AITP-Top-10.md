@@ -2,7 +2,7 @@
 
 **Version:** 1.1
 **Date:** March 2026
-**Authors:** Michael Harrison, Ard Haskell -- OSInfo Inc.
+**Authors:** Michael Harrison, Ard Haskell, OSInfo Inc.
 **License:** CC BY-SA 4.0
 
 ---
@@ -207,7 +207,7 @@ AITP addresses this risk through **Attestation (Section 3.3)**. Every agent acti
 
 ### Description
 
-Agent context windows that accept external input without sanitization or boundary enforcement are vulnerable to prompt injection. The context window is the agent's working memory. Everything in it -- system instructions, user input, retrieved documents, tool outputs, conversation history -- influences the agent's behavior. Context is treated as trusted input. There is no distinction between verified content and content of unknown provenance.
+Agent context windows that accept external input without sanitization or boundary enforcement are vulnerable to prompt injection. The context window is the agent's working memory. Everything in it, system instructions, user input, retrieved documents, tool outputs, conversation history, influences the agent's behavior. Context is treated as trusted input. There is no distinction between verified content and content of unknown provenance.
 
 An attacker who can insert content into any part of the context window can influence agent behavior. This is not a bug; it is the architecture. Models are designed to attend to their full context. No cryptographic mechanism exists to mark certain context segments as verified and others as unverified, or to prevent the model from acting on injected content.
 
@@ -327,5 +327,5 @@ AITP addresses this risk through the **Co-signature Protocol (Section 5)** and t
 
 ---
 
-*AI Trust Protocol (AITP) v1.1 -- OSInfo Inc. -- March 2026*
+*AI Trust Protocol (AITP) v0.3, OSInfo Inc., March 2026*
 *Licensed under CC BY-SA 4.0*
