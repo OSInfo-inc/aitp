@@ -1,6 +1,6 @@
 # AITP Top 10 Agent Trust Risks
 
-**Version:** 0.1 (Draft)
+**Version:** 1.1
 **Date:** March 2026
 **Authors:** Michael Harrison, Ard Haskell -- OSInfo Inc.
 **License:** CC BY-SA 4.0
@@ -327,5 +327,5 @@ AITP addresses this risk through the **Co-signature Protocol (Section 5)** and t
 
 ---
 
-*AI Trust Protocol (AITP) v0.1 Process -- OSInfo Inc. -- March 2026*
+*AI Trust Protocol (AITP) v1.1 -- OSInfo Inc. -- March 2026*
 *Licensed under CC BY-SA 4.0*

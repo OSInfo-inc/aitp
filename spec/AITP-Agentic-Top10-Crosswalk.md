@@ -1,6 +1,6 @@
 # AITP / OWASP Top 10 for Agentic Applications Crosswalk
 
-**Version:** 0.1 (Draft)
+**Version:** 1.1
 **Date:** March 2026
 **Authors:** Michael Harrison, Ard Haskell -- OSInfo Inc.
 **License:** CC BY-SA 4.0
@@ -195,7 +195,7 @@ Users over-trust agent recommendations, allowing attackers to influence human de
 
 **AITP Mitigation:**
 
-- **Attestation provides verification, not trust (Section 3.3).** AITP explicitly separates process integrity from output correctness (Section 8). A signed attestation proves that a specific agent produced a specific output. It does not certify the output as true. By making the process transparent and verifiable, AITP provides the human with the information needed to calibrate trust: which agent produced this, what was it authorized to do, what model was it running, and what was its input.
+- **Attestation provides verification, not trust (Section 3.3).** AITP explicitly separates process integrity from output correctness (Section 8) (OWASP Specification Section 8 / NIST Submission Section 10). A signed attestation proves that a specific agent produced a specific output. It does not certify the output as true. By making the process transparent and verifiable, AITP provides the human with the information needed to calibrate trust: which agent produced this, what was it authorized to do, what model was it running, and what was its input.
 
 - **Co-signature as independent check (Section 5.1).** Before a Tier 3 action based on an agent recommendation reaches the human, it has been co-signed by an independent agent of different architecture. The co-signature is not a correctness guarantee, but it is an independent safety check that reduces the probability of a manipulated recommendation reaching the human unchallenged.
 
@@ -249,13 +249,16 @@ The following matrix shows which AITP trust primitives and architectural compone
 
 ---
 
+
+Note: This matrix shows primary mitigations. Secondary mitigations exist where AITP primitives provide defense-in-depth. For example, Attestation provides secondary mitigation for all ten ASI risks through the tamper-evident audit chain.
+
 ## Gap Analysis
 
 AITP provides architectural mitigation for all ten OWASP Agentic Application risks. The following areas represent boundaries of AITP's coverage:
 
 1. **Model-level prompt injection prevention.** AITP does not prevent prompt injection. It contains the blast radius through tier separation, quarantine, and co-signature. Prevention remains an open research problem at the model layer.
 
-2. **Output correctness.** AITP guarantees process integrity, not output quality. A signed, attested, co-verified output can still be wrong (Section 8). Organizations must combine AITP's trust architecture with domain-specific validation.
+2. **Output correctness.** AITP guarantees process integrity, not output quality. A signed, attested, co-verified output can still be wrong (Section 8) (OWASP Specification Section 8 / NIST Submission Section 10). Organizations must combine AITP's trust architecture with domain-specific validation.
 
 3. **Human judgment quality.** AITP can route highest-consequence decisions to a human, but it cannot ensure the human makes a good decision. The human co-signature mechanism ensures engagement, not competence.
 
@@ -265,5 +268,5 @@ These gaps are not deficiencies in AITP. They are boundaries between trust infra
 
 ---
 
-*AI Trust Protocol (AITP) v0.1 Process -- OSInfo Inc. -- March 2026*
+*AI Trust Protocol (AITP) v1.1 -- OSInfo Inc. -- March 2026*
 *Licensed under CC BY-SA 4.0*

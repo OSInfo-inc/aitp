@@ -1,11 +1,13 @@
 # AI Trust Protocol (AITP) Specification
 
-**Version:** 0.1 (Draft)
+**Version:** 1.1
 **Date:** March 2026
 **Authors:** Michael Harrison, Ard Haskell -- OSInfo Inc.
 **License:** CC BY-SA 4.0
 
 ---
+
+> **Note:** Note: This specification is the canonical AITP document. The NIST AI RMF submission includes additional content mapping AITP to NIST AI 100-1 and AI 600-1 framework functions. Where discrepancies exist between documents, this specification takes precedence.
 
 ## Table of Contents
 
@@ -30,7 +32,13 @@ Current AI systems operate without cryptographic identity, audit trails, or scop
 
 The prevailing response to this gap falls into two categories: prevention and abstention. Prompt guardrails, sandboxing, output filtering, and instruction hierarchies are perimeter defenses. They assume attacks can be stopped at the boundary. AITP assumes breach. Every failure cannot be prevented and must be expected. The "Trust Protocol" builds survivability: the ability to detect compromise, attribute actions, limit blast radius, and recover from failure.
 
-Recent work, including Rajagopalan and Rao's Authenticated Workflows (2026), has begun addressing cryptographic boundary enforcement for agentic systems. These contributions validate the urgency of the problem. However, existing approaches focus on single-system enterprise workflows and do not address multi-architecture verification, two-person integrity for consequential actions, scalable validation across millions of artifacts (DDA), offline resilience requirements, or key revocation for compromised agents. AITP provides the complete trust framework.
+## Related Work
+
+Recent and concurrent work has begun addressing aspects of the agent trust problem. Rajagopalan and Rao (2026) introduce Authenticated Workflows with the MAPL policy language and formal proofs across nine frameworks, providing strong authentication and scope binding but not addressing co-signature requirements, post-compromise containment, or degraded-mode operation. The Cloud Security Alliance Agentic Trust Framework (February 2026) applies Zero Trust principles to agent governance with unforgeable identity and least-privilege segmentation but remains a principles-based governance framework without runtime enforcement mechanisms. Google's Agent-to-Agent (A2A) Protocol and Anthropic's Model Context Protocol (MCP) solve agent discovery and tool integration respectively; neither provides cryptographic attestation, co-signature, or revocation. Microsoft's Agent Governance Toolkit implements Ed25519 identity and a deterministic policy engine but open-source review reveals critical enforcement features (cascade revocation, quarantine, ring elevation) are stubbed as no-ops in the Community Edition, with scope binding defaulting to wildcard capabilities. The IETF Agentic JWT draft (draft-goswami-agentic-jwt-00) extends OAuth 2.0 with cryptographic agent identity but does not address co-signature or blast radius containment.
+
+AITP differs from all existing approaches in two fundamental ways. First, AITP is the only architecture that assumes breach rather than designing solely for prevention. Every other framework builds stronger authentication boundaries; AITP designs for what happens when a properly authenticated agent, operating within its authorized scope, has its reasoning compromised. Second, AITP introduces Distributed Deterministic Attestation (DDA), a scalable verification architecture that no other framework addresses: hierarchical validation across millions of artifacts through cross-architecture agent tiers, reducing volume to single-digit human decision points.
+
+AITP is designed to complement, not replace, existing protocols. An organization may use A2A for agent discovery, MCP for tool integration, and AITP for trust enforcement across the resulting agent ecosystem.
 
 As AI-generated content enters every consequential domain -- legal filings, medical records, financial analysis, military intelligence, academic research -- the foundational question shifts from "is this iteration of AI good enough" to "how do we know what's true?" There is no single source of truth. There never was. We just hadn't built systems fast enough to expose that. Now we have, so what do we do about it?
 
@@ -68,7 +76,7 @@ Agent capabilities are extended through plugins, skills, and tool registries ana
 
 Agent ecosystems depend on third-party tools: MCP servers, plugins, skill registries, API integrations. These components are implicitly trusted upon installation. There is no signing of tool packages, no verification of tool provenance, no attestation of tool behavior, and no scope limitation on what a tool can access once loaded.
 
-A malicious or compromised tool operates with the full permissions of the agent that loads it. Tool registries are the npm of agent systems, and the industry has not yet had its event-stream moment. When it does, there will be no audit trail, no revocation mechanism, and no blast radius containment.
+A malicious or compromised tool operates with the full permissions of the agent that loads it. Tool registries are the npm of agent systems, and the industry has not yet had its event-stream moment. (In 2018, the npm package event-stream was compromised via a malicious dependency injection, affecting millions of downstream packages. The attacker gained commit access through social engineering and inserted code targeting cryptocurrency wallets.) When it does, there will be no audit trail, no revocation mechanism, and no blast radius containment.
 
 ### 2.4 Credential and Data Exfiltration via Output Channels
 
@@ -137,7 +145,7 @@ Every agent action produces a signed attestation record. The record is the atomi
 | "output_hash" | SHA-512 hash of the action's output |
 | "timestamp" | RFC 3339 timestamp, sourced from a trusted time authority |
 | "scope_ref" | Reference to the agent's scope manifest |
-| "prev_hash" | SHA-256 hash of the previous attestation record (chain linkage) |
+| "prev_hash" | SHA-256 hash of the previous attestation record (SHA-256 is used for chain linkage as a performance optimization; SHA-512 is used for all content hashes) (chain linkage) |
 | "signature" | Ed25519 signature over all preceding fields |
 
 Attestation records are append-only. No record may be modified or deleted. Records are hash-chained: each record includes the hash of the previous record, forming a tamper-evident sequence. Any modification to a historical record breaks the chain from that point forward.
@@ -180,6 +188,9 @@ This design is deliberate: a component that does not process natural language ca
 
 The Signing Authority is the root of trust for the AITP system. Its own integrity is protected through standard cryptographic infrastructure: HSM-backed signing keys, quorum-based access controls, and offline root keys. Compromise of the Signing Authority is a catastrophic event equivalent to compromise of a certificate authority.
 
+
+The Signing Authority MUST be deployed with N+1 redundancy at minimum. Implementations SHOULD use active-active deployment with consensus-based decision making (e.g., 2-of-3 or 3-of-5 quorum) for signing operations. Each Signing Authority instance MUST maintain an independent copy of the agent registry and revocation list. Failover between instances MUST be transparent to agents: an agent's signing request MUST succeed if any quorum of Signing Authority instances is available. The Signing Authority's own key material MUST be stored in hardware security modules (HSMs) or equivalent tamper-resistant storage.
+
 ### 3.6 Revocation
 
 When an agent identity is compromised, the associated key pair is revoked immediately. All pending actions requiring that identity's signature are frozen. All future signing requests from that key are rejected. The blast radius of a compromised agent is bounded: one agent, one key, one scope. No other agent's identity, scope, or attestation chain is affected. Revocation is immediate and permanent. A revoked key cannot be reinstated. A new key pair must be generated, bound to a new scope manifest, and re-authorized.
@@ -208,7 +219,7 @@ When an agent identity is compromised, the associated key pair is revoked immedi
 **Recovery Sequence:**
 
 1. **New identity issuance.** A new Ed25519 key pair is generated through the standard registration process. The new identity has no cryptographic relationship to the compromised identity. It is a new agent.
-2. **Tier reset.** The recovered agent re-enters the system at Tier 1. It must re-earn tier promotion through normal operational history. There is no fast-track back to the trust level it held before compromise.
+2. **Tier reset.** The recovered agent re-enters the system at Tier 1. It must Tier promotion from Observe to Process requires: (a) a minimum of 100 consecutive actions without scope violation, attestation failure, or anomaly flag; (b) independent verification by a Tier 2 agent that the candidate's attestation chain is intact; and (c) approval from the policy orchestrator. Tier promotion from Process to Act additionally requires human approval via out-of-band confirmation. Promotion criteria are configurable per deployment but MUST NOT be less restrictive than the defaults specified here. Tier demotion (from Act to Process, or Process to Observe) MAY occur automatically upon detection of anomalous behavior, without waiting for full compromise determination. There is no fast-track back to the trust level it held before compromise.
 3. **Output review.** All output from the compromised identity, from the estimated time of compromise through revocation, is flagged for review. Downstream agents that consumed this output are identified through the attestation chain, and their dependent actions are flagged.
 4. **Incident record.** A revocation incident record is appended to the immutable audit log. The record includes: the compromised identity, the revocation trigger, the estimated compromise window, the list of frozen actions, and the list of downstream agents flagged for review. This record is permanent and cannot be modified or deleted.
 
@@ -238,6 +249,8 @@ Tier 1 agents operate in read-only mode. They ingest data from external sources,
 - Tier 1 agents cannot act on the world. They observe it.
 
 **Blast radius if compromised:** Corrupted data in the quarantine buffer that no downstream system has acted on. No real-world effect is possible from Tier 1 alone. The quarantine buffer is designed to be inspected before anything in it is consumed. A compromised Tier 1 agent is a data integrity problem, not an operational security problem.
+
+The quarantine buffer is assumed hostile by design. Content enters from Tier 1 agents that ingest untrusted external data. AITP does not specify the ingestion filter because attack vectors evolve faster than any static filter list. A deterministic scanner MAY perform structural checks (encoding validation, format compliance) but is NOT relied upon as a security boundary. The security boundary is architectural: Tier 2 agents operate on a different model architecture in a different execution context, with no ability to act on the world. If malicious content survives the scanner to reach Tier 2, the co-signature gate prevents it from reaching Tier 3 (Act) without independent agreement from an architecturally independent co-signer.
 
 ### 4.2 Tier 2: Process (Medium Trust)
 
@@ -296,6 +309,9 @@ AITP defines three classes of valid co-signers, each with distinct trust propert
 
 **3. Human Operator (out-of-band confirmation).** A human who confirms authorization via out-of-band communication channel using a one-time cryptographic nonce. The out-of-band requirement prevents a compromised agent from simulating human approval within the system's primary communication channel. Examples: a Signal message containing a one-time nonce, a hardware token confirmation, a phone call. The human signs by returning the nonce through the out-of-band channel. The nonce is single-use, time-bounded, and tied to the specific action being authorized.
 
+Note on terminology: The policy orchestrator is architecturally distinct from workflow orchestrators used in agent frameworks (e.g., LangChain, LangGraph, CrewAI). Workflow orchestrators route tasks, manage agent state, and pass data between agents; they participate in the operational pipeline and have full visibility into content. If a workflow orchestrator is compromised, the attacker controls the entire pipeline. The AITP policy orchestrator performs no content generation, tool invocation, or data processing. It evaluates signing requests against deterministic policy rules. A compromised policy orchestrator can approve unauthorized actions but cannot inject data, redirect workflows, or generate content. A system MAY use both: a workflow orchestrator for task routing and an AITP policy orchestrator for trust enforcement. These are complementary, not competing, functions.
+
+
 ### 5.2 Co-Signature Requirements by Tier Transition
 
 **Tier 1 to Tier 2 (quarantine to analysis):**
@@ -340,6 +356,10 @@ DDA is built on three design principles:
 ### 6.1 Slice Mathematics
 
 Given a corpus of *S* items distributed across *n* agents, each agent receives *S/n* items with boundary overlap. *S* mod *n* MUST equal 0 (the corpus is padded if necessary). Boundary overlap means adjacent slices share items at their edges, creating independent cross-checks without requiring a separate validation pass. Disagreements at shard boundaries are the first signal of anomaly.
+
+When the corpus size S is not evenly divisible by n, the corpus MUST be padded with null sentinel items to achieve S mod n = 0. Null sentinel items are empty records with a deterministic hash (SHA-512 of zero bytes) that agents recognize and skip during validation. Padding does not alter the hash of any real item in the corpus.
+
+Boundary overlap size MUST be explicitly configured per deployment. The overlap SHOULD be no less than 1% of the slice size and no more than 10%. For example, given 1,000 agents each processing 6,000 items from a 6 million item corpus, a 5% overlap produces 300-item boundary zones. The overlap size represents a tradeoff between verification confidence (larger overlap detects more boundary-adjacent anomalies) and computational cost (larger overlap increases total processing volume).
 
 ### 6.2 Hierarchical Verification Pyramid
 
@@ -399,14 +419,17 @@ Every AITP-compliant system MUST define a degradation path. If the answer to the
 
 AITP-compliant systems MUST implement a hybrid execution architecture spanning at least two of the following three deployment classes:
 
-**Cloud (target: 80% of operational workload).**
+**Cloud models (primary layer).**
 Cloud-hosted models (Opus, Sonnet, GPT-class, or equivalent) provide the primary intelligence layer. Cloud infrastructure is fast, capable, and fragile: it depends on network connectivity, provider availability, and third-party operational decisions outside the system operator's control.
 
-**Local (target: 15% of operational workload).**
+**Local models (continuity layer).**
 Locally hosted models (Llama, Qwen, Mistral, or equivalent) running on operator-controlled hardware provide a continuity layer. Local models are slower and less capable than cloud models but operate independently of external providers.
 
-**Offline (target: 5% of operational workload).**
+**Offline models (trust-critical validation layer).**
 Air-gapped models with no network connectivity perform trust-critical validation tasks. Offline nodes cannot be compromised via network-based attacks. At least one verification node in the DDA pyramid (Section 6) MUST operate without external connectivity.
+
+
+The distribution of workload across cloud, local, and offline tiers is deployment-specific. As an illustrative example, an organization might route approximately 80% of agent workload through cloud models for maximum capability, 15% through local models for continuity, and 5% through offline models for trust-critical validation. These percentages are not normative requirements. The normative requirement is that at least one verification node in the trust chain MUST operate without external network connectivity.
 
 ### 7.2 Degradation Behavior
 
@@ -464,5 +487,5 @@ This specification avoids tying its requirements to the current transformer arch
 
 ---
 
-*AI Trust Protocol (AITP) v0.1 Process -- OSInfo Inc. -- March 2026*
+*AI Trust Protocol (AITP) v1.1 -- OSInfo Inc. -- March 2026*
 *Licensed under CC BY-SA 4.0*
