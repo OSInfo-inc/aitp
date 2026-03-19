@@ -355,7 +355,7 @@ DDA is built on three design principles:
 
 ### 6.1 Slice Mathematics
 
-Given a corpus of *S* items distributed across *n* agents, each agent receives *S/n* items with boundary overlap. *S* mod *n* MUST equal 0 (the corpus is padded if necessary). Boundary overlap means adjacent slices share items at their edges, creating independent cross-checks without requiring a separate validation pass. Disagreements at shard boundaries are the first signal of anomaly.
+Given a corpus of *S* items distributed across *n* agents, each agent receives *S/n* items with boundary overlap. *S* mod *n* MUST equal 0 (the corpus is padded if necessary). Boundary overlap means adjacent slices share items at their edges, creating independent cross-checks without requiring a separate validation pass. Disagreements at slice boundaries are the first signal of anomaly.
 
 When the corpus size S is not evenly divisible by n, the corpus MUST be padded with null sentinel items to achieve S mod n = 0. Null sentinel items are empty records with a deterministic hash (SHA-512 of zero bytes) that agents recognize and skip during validation. Padding does not alter the hash of any real item in the corpus.
 
@@ -366,7 +366,7 @@ Boundary overlap size MUST be explicitly configured per deployment. The overlap 
 DDA defines a five-tier verification pyramid:
 
 **Tier 0: Raw Validation.**
-Approximately 1,000 agents, each processing approximately 6,000 files. Agents perform structural validation, hash verification, format compliance, and content classification. Each agent produces a signed attestation for its shard. Boundary overlap between adjacent slices provides built-in cross-verification.
+Approximately 1,000 agents, each processing approximately 6,000 files. Agents perform structural validation, hash verification, format compliance, and content classification. Each agent produces a signed attestation for its slice. Boundary overlap between adjacent slices provides built-in cross-verification.
 
 **Tier 1: Cross-Validation.**
 Approximately 50 agents operating on a different model architecture than Tier 0. These agents receive only anomalies and boundary disagreements from Tier 0, not the full corpus. They produce meta-attestations that either confirm or challenge Tier 0 findings.
@@ -401,7 +401,7 @@ The Anomaly Resolution Agent sits outside the DDA tier pyramid. It is an indepen
 
 The ARA resolution loop produces one of three outcomes per iteration:
 
-**Outcome A: Resolved, requires human approval.** The ARA identifies a deterministic cause (e.g., an agent crashed mid-slice, a shard was incompletely processed) and recommends a specific corrective action such as reprocessing the affected shard. The recommendation requires human sign-off before execution.
+**Outcome A: Resolved, requires human approval.** The ARA identifies a deterministic cause (e.g., an agent crashed mid-slice, a slice was incompletely processed) and recommends a specific corrective action such as reprocessing the affected slice. The recommendation requires human sign-off before execution.
 
 **Outcome B: Cannot resolve, escalate.** Both sides of the disagreement are internally consistent. The conflict is genuinely ambiguous. The ARA documents both positions and escalates to the human orchestrator at Tier 4.
 
