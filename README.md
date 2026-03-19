@@ -2,7 +2,7 @@
 
 **An open standard for trust, verification, and accountability in autonomous agent systems.**
 
-Version 0.1 (Draft) | March 2026
+Version 0.3 | March 2026
 
 Authors: Michael Harrison and Ard Haskell, OSInfo Inc.
 
